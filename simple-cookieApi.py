@@ -67,14 +67,14 @@ async def create_job():
         url = data['url']
         operate = data['operate'].lower()
         driver = DRIVER.get("webdriver")
-        if operate != "getcookies":
-            raise "operate optional error"
+        if operate not in ["login", "getcookies"]:
+            raise Exception("operate optional error")
         if operate == "login":
             driver = await project_login(url)
         result = await project_cookies(driver, url)
     except Exception as ex:
         result = {
-            f'request body missing {ex}, e.g': {
+            f'request body missing: {ex}, e.g': {
                 "operate": "login",
                 "url": "https://nowsecure.nl"
             }, 'notes': "operate optional: [login|getCookies]"
@@ -121,7 +121,7 @@ async def index():
 
 
 def run() -> None:
-    app.run()
+    app.run(debug=True)
 
 
 if __name__ == "__main__":
