@@ -5,7 +5,7 @@
 import os
 import undetected_chromedriver as uc
 from selenium.webdriver.chrome.options import Options
-from quart import Quart, request, jsonify
+from quart import Quart, request, jsonify, render_template_string
 
 app = Quart(__name__)
 
@@ -65,9 +65,9 @@ async def create_job():
     try:
         data = await request.get_json()
         url = data['url']
-        operate = data['operate']
+        operate = data['operate'].lower()
         driver = DRIVER.get("webdriver")
-        if operate != "getCookies":
+        if operate != "getcookies":
             raise "operate optional error"
         if operate == "login":
             driver = await project_login(url)
@@ -85,8 +85,39 @@ async def create_job():
 
 @app.get("/")
 async def index():
-    result_structure["result"] = "welcome to simple cookie api"
-    return jsonify(result_structure)
+    return await render_template_string(source="""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Cookie API</title>
+</head>
+<body>
+<h1>欢迎使用Simple Cookie API</h1>
+<div style="text-align:left">
+    <code>
+        <span>目前提供两个接口：/login 和 /jobs</span><br>
+        <span>/login 手动登录接口</span><br>
+        <span>接口样例</span><br>
+        <span>```</span><br>
+        <span>curl --request POST \</span><br>
+        <span>--url http://127.0.0.1:5000/jbos \</span><br>
+        <span>--header 'Content-Type: application/json' \</span><br>
+        <span>--data '{"url": "https://domain.com", "operate":"getCookies"}'</span><br>
+        <span>```</span><br>
+        <span>/jobs 获取对应url的cookies</span><br>
+        <span>接口样例</span><br>
+        <span>```</span><br>
+        <span>curl --request POST \</span><br>
+        <span>--url http://127.0.0.1:5000/jbos \</span><br>
+        <span>--header 'Content-Type: application/json' \</span><br>
+        <span>--data '{"url": "https://domain.com", "operate":"getCookies"}'</span><br>
+        <span>```</span><br>
+    </code>
+</div>
+</body>
+</html>
+""")
 
 
 def run() -> None:
