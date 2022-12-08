@@ -1,5 +1,4 @@
 FROM selenium/standalone-chrome:4.7.0-20221202
-#FROM jtxiao/cookies-api:v1
 
 USER seluser
 
@@ -17,7 +16,6 @@ RUN sudo pip config set global.index-url  https://pypi.doubanio.com/simple && \
 
 ADD simple-cookieApi.py /opt/simple-cookieApi.py
 COPY simple-cookieApi.conf /etc/supervisor/conf.d/
-#COPY start-cookieapi.sh /opt/bin/
 
 ENV DEVELOPMENT=False
 
