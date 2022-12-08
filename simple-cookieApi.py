@@ -60,7 +60,7 @@ async def startup():
     app.add_background_task(init_webdirver)
 
 
-@app.route('/jbos', methods=['POST'])
+@app.route('/jobs', methods=['POST'])
 async def create_job():
     try:
         data = await request.get_json()
