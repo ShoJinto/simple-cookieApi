@@ -52,7 +52,7 @@ root@7197f225bd7d:/# docker run -d -p 8080:8080 -p 5900:59000 <yourdockerimagena
 
 ```shell
 root@7197f225bd7d:/# echo '{
->     "url": "https://csdn.net",
+>     "url": "https://domain.com",
 >     "operate":"getCookies"
 > }' |  \
 >   http POST http://127.0.0.1:8000/jbos \
@@ -68,7 +68,7 @@ server: hypercorn-h11
 {
     "result": [
         {
-            "domain": ".csdn.net",
+            "domain": ".domain.com",
             "httpOnly": false,
             "name": "Hm_lpvt_6bcd52f51e9b3dce32bec4a3997715ac",
             "path": "/",
@@ -76,7 +76,7 @@ server: hypercorn-h11
             "value": "1670393282"
         },
         {
-            "domain": "www.csdn.net",
+            "domain": "www.domain.com",
             "expiry": 1670395077,
             "httpOnly": true,
             "name": "acw_tc",
@@ -85,7 +85,7 @@ server: hypercorn-h11
             "value": "276077ca16703932768538537e1a4e16c84b962fe713e14cb36c005c5d9dde"
         },
         {
-            "domain": ".csdn.net",
+            "domain": ".domain.com",
             "expiry": 1685945278,
             "httpOnly": false,
             "name": "ssxmod_itna",
