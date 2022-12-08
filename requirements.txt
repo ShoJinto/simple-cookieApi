@@ -1,0 +1,4 @@
+hypercorn==0.14.3
+hyperframe==6.0.1
+quart==0.18.3
+undetected-chromedriver==3.1.7
