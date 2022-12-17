@@ -18,5 +18,6 @@ ADD simple-cookieApi.py /opt/simple-cookieApi.py
 COPY simple-cookieApi.conf /etc/supervisor/conf.d/
 
 ENV DEVELOPMENT=False
+ENV POOL_SIZE=1
 
 EXPOSE 8000

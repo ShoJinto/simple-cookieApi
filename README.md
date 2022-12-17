@@ -1,4 +1,4 @@
-# simplie-cookieApi
+# cookieApi
 
 ## 缘起
 
@@ -6,6 +6,13 @@
 的内容他的请求参数是：`/data/detial/conent?paramid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 后面的参数是通过请求接口`/doc/xxx/yyy/bbb?aaid=xxxxxxxxxx`和`/aaa/xxx/yyy/bbb?aaid=xxxxxxxxxx`
 ...后面的接口是302跳转，respons的header中含有下一个接口地址以及他会更新cookie信息，以至于最终的请求header和cookie难以跟踪至于最终要302几次我觉得应该是取决于网站开发者。尝试了很久最终选择放弃，进而谋生本项目。
+
+## 更新日志
+
+- 在上一版本的基础上调整了URL，将单一视图函数才分成多个视图，降低视图函数的逻辑复杂度。
+- 实现了chromedriver的多线程，以满足异步爬虫调用发生后端chrome实例阻塞的情况，默认单chrome实例。
+- 实现cookie登录功能，以满足多线程情况下不同chrome实例需要重复登录或者单chrome实例重启后需要重新登录的情况。
+- 新增dome脚本
 
 ## 项目介绍
 
@@ -27,7 +34,7 @@
 ```shell
 ├── Dockerfile
 ├── requirements.txt
-├── simple-cookieApi.conf
+├── simple-cookieApi.conf 
 └── simple-cookieApi.py
 ```
 
@@ -37,6 +44,7 @@
 root@7197f225bd7d:/# git clone https://github.com/shojinto/simple-cookieApi.git
 root@7197f225bd7d:/# docker build -t <yourdockerimagename> .
 root@7197f225bd7d:/# docker run -d -p 8080:8080 -p 5900:59000 <yourdockerimagename>
+root@7197f225bd7d:/# docker run -d -e POOL_SIZE=3 -p 8080:8080 -p 5900:59000 <yourdockerimagename> #多线程chrome后端启动
 ```
 
 - 功能介绍
@@ -52,8 +60,8 @@ root@7197f225bd7d:/# docker run -d -p 8080:8080 -p 5900:59000 <yourdockerimagena
 
 ```shell
 root@7197f225bd7d:/# echo '{
->     "url": "https://domain.com",
->     "operate":"getCookies"
+>     "url": "https://domain.net",
+>     "operate":"getcookies"
 > }' |  \
 >   http POST http://127.0.0.1:8000/jbos \
 >   Content-Type:application/json \
@@ -66,9 +74,10 @@ date: Wed, 07 Dec 2022 06:08:02 GMT
 server: hypercorn-h11
 
 {
-    "result": [
+    "b64_cookies": "W3siZG9tYWluIjogIi5jbmtpLm5ldCIsICJleHBpcnkiOiAxNjcxMjY4NDQ3LCAiaHR0cE9ubHkiOiBmYWxzZSwgIm5hbWUiOiAiY19tX2V4cGlyZSIsICJwYXRoIjogIi8iLCAic2VjdXJlIjogdHJ1ZSwgInZhbHVlIjogIjIwMjItMTItMTclMjAxNyUzQTE0JTNBMDcifSwgeyJkb21haW4iOiAIjogIi8iLCAic2VjdXJlIjogdHJ1ZSw.....lLCAidmFsdWUiOiAidHJ1ZSJ9XQ=="
+    "cookies": [
         {
-            "domain": ".domain.com",
+            "domain": ".domain.net",
             "httpOnly": false,
             "name": "Hm_lpvt_6bcd52f51e9b3dce32bec4a3997715ac",
             "path": "/",
@@ -76,7 +85,7 @@ server: hypercorn-h11
             "value": "1670393282"
         },
         {
-            "domain": "www.domain.com",
+            "domain": "www.domain.net",
             "expiry": 1670395077,
             "httpOnly": true,
             "name": "acw_tc",
@@ -85,7 +94,7 @@ server: hypercorn-h11
             "value": "276077ca16703932768538537e1a4e16c84b962fe713e14cb36c005c5d9dde"
         },
         {
-            "domain": ".domain.com",
+            "domain": ".domain.net",
             "expiry": 1685945278,
             "httpOnly": false,
             "name": "ssxmod_itna",
