@@ -36,11 +36,14 @@ def get_content(url):
 
 def login_with_cookie(url):
     """
-    url:登录成功后需要跳转的页面url
+    url:等成功后需要跳转的页面url
     """
-    data = {"url": url}
+    data = {
+        "url": url,
+        "domain": "domain.com",
+        "cookies": "W3siZG9tYWluIjogIi5jbmtpLm5ldCIsI....gdHJ1ZSwgInZhbHVlIjogIioifV0="
+    }
     r = requests.post(url="http://127.0.0.1:5000/login_with_cookies", data=json.dumps(data),
                       headers={'Content-Type': 'application/json'})
     data = r.json()
     return data
-

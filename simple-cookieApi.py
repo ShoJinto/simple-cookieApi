@@ -3,6 +3,7 @@
 # Created by ShoJinto at 2022/12/5
 
 import os
+import sys
 import json
 import base64
 import random
@@ -17,10 +18,7 @@ app = Quart(__name__)
 
 options = Options()
 options.add_argument("--disable-popup-blocking")
-DEVELOPMENT = os.environ.get("DEVELOPMENT", default=True)
 POOL_SIZE = os.environ.get("POOL_SIZE", default=1)
-driver_executor = "chromedriver.exe" if DEVELOPMENT is True else None
-
 DRIVER = []  # 全局变量保存driver对象，以便chromedriver复用
 
 response_structure = {
@@ -33,42 +31,58 @@ response_exception_template = """{{
     }}
 }}"""
 
+platform = sys.platform
+if platform.endswith("win32"):
+    driver_executor = "chromedriver.exe"
+if platform.endswith("linux"):
+    driver_executor = "/usr/bin/chromedriver"
+if platform.endswith("darwin"):
+    driver_executor = "/usr/bin/chromedriver"
+
 
 def headers_callback(headers):
     print(headers)
 
 
-async def init_webdriver(pool_size=POOL_SIZE):
+async def init_webdriver(pool_size=int(POOL_SIZE)):
     """
     利用Quart的background_task机制在simple-cookieAPI启动的时候就初始化一个带界面的chromedirver
     引入多线程实现后端chromedriver池化
     """
-    if DEVELOPMENT is True:
-        driver_options = {"driver_executable_path": driver_executor,
-                          "options": options,
-                          "enable_cdp_events": True}
-    else:
-        driver_options = {"options": options,
-                          "enable_cdp_events": True}
+
+    def driver_warpper(kwargs):
+        """
+        其实undetected_chromedriver已经有自动获取chromedriver对应版本的逻辑，但是由于“你懂的”原因这里需要封装一下chrome实例化过程，
+        以便ThreadPoolExecutor能够顺利将参数传递给chrome实例对象
+        """
+        driver = uc.Chrome(**kwargs)
+        return driver
+
+    driver_options = {"driver_executable_path": driver_executor,
+                      "options": options,
+                      "enable_cdp_events": True}
+
     with ThreadPoolExecutor() as executor:
         tds = []
         for num in range(pool_size):
-            td = executor.submit(uc.Chrome, kwargs=driver_options)
+            td = executor.submit(driver_warpper, kwargs=driver_options)
             tds.append(td)
         for td in as_completed(tds):
             DRIVER.append({"webdriver": td.result(), "state": "init"})
     print("Webdriver pool initialization complated")
 
 
-async def async_login(drivers, url, cookies):
+async def async_login(drivers, domain, url, cookies):
     for driver in drivers:
         driver = driver.get("webdriver")
         driver.delete_all_cookies()
         _abs_url = ""  # 标志位，domain重复的cookie将跳过driver的get方法
         for cookie in cookies:
-            domain = cookie["domain"]
+            if cookie["domain"] == f".{domain}":
+                _url = "https://www" + domain
+            else:
+                _url = "https://" + domain
             # chromedriver添加cookie是带domain的所以在添加cookie之前需要先打开页面
-            _url = "https://www" + domain if domain.startswith(".") else "https://" + domain
             if domain != _abs_url: driver.get(_url)
             driver.add_cookie(cookie)
             _abs_url = domain
@@ -87,7 +101,7 @@ async def webdriver(state, webdrv=None):
         _state = _DRIVER.get("state")
         driver = _DRIVER.get("webdriver") if _state != 'locked' else locked_webdrv
         if driver:
-            # 更新webdriver的状态，类似给当前运行的webdriver加锁���
+            # 更新webdriver的状态，类似给当前运行的webdriver加锁🔒
             DRIVER.remove(_DRIVER)
             _DRIVER.update({"state": state})
             DRIVER.append(_DRIVER)
@@ -156,14 +170,18 @@ async def login_with_cookies():
     """
     try:
         request_data = await request.get_json()
-        url = request_data["url"]
-        cookies = request_data["cookies"]
-        cookies = json.loads(base64.b64decode(cookies).decode('utf8'))
 
-        await async_login(DRIVER, url, cookies)
+        try:
+            url = request_data["url"]
+            cookies = request_data["cookies"]
+            domain = request_data["domain"]
+        except KeyError as ex:
+            raise ex
+
+        cookies = json.loads(base64.b64decode(cookies).decode('utf8'))
+        await async_login(DRIVER, domain, url, cookies)
 
         response_structure["message"] = "logined with cookie"
-
         response_entry = response_structure
     except Exception as ex:
         message = response_exception_template.format(ex=ex, operate="login_with_cookies")
@@ -217,4 +235,3 @@ def run() -> None:
 
 if __name__ == "__main__":
     run()
-

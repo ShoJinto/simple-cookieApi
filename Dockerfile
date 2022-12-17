@@ -17,7 +17,6 @@ RUN sudo pip config set global.index-url  https://pypi.doubanio.com/simple && \
 ADD simple-cookieApi.py /opt/simple-cookieApi.py
 COPY simple-cookieApi.conf /etc/supervisor/conf.d/
 
-ENV DEVELOPMENT=False
 ENV POOL_SIZE=1
 
 EXPOSE 8000
