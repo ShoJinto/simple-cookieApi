@@ -78,8 +78,10 @@ async def async_login(drivers, domain, url, cookies):
         driver.delete_all_cookies()
         _abs_url = ""  # 标志位，domain重复的cookie将跳过driver的get方法
         for cookie in cookies:
-            if cookie["domain"] == f".{domain}":
-                _url = "https://www" + domain
+            if cookie["domain"].startswith(".") and cookie["domain"] == f".{domain}":
+                _url = "https://www" + cookie["domain"]
+            elif cookie["domain"].startswith(".") and cookie["domain"] != f".{domain}":
+                _url = "https://" + cookie["domain"].strip(".")
             else:
                 _url = "https://" + domain
             # chromedriver添加cookie是带domain的所以在添加cookie之前需要先打开页面
