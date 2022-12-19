@@ -83,11 +83,11 @@ async def async_login(drivers, domain, url, cookies):
             elif cookie["domain"].startswith(".") and cookie["domain"] != f".{domain}":
                 _url = "https://" + cookie["domain"].strip(".")
             else:
-                _url = "https://" + domain
+                _url = "https://" + cookie["domain"]
             # chromedriver添加cookie是带domain的所以在添加cookie之前需要先打开页面
-            if domain != _abs_url: driver.get(_url)
+            if _url != _abs_url: driver.get(_url)
             driver.add_cookie(cookie)
-            _abs_url = domain
+            _abs_url = _url
         driver.get(url)  # 刷新页面
 
 
